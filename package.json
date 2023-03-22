@@ -1,0 +1,30 @@
+{
+  "name": "trading-simulator",
+  "version": "1.0.0",
+  "description": "simulate different trading strategies quickly",
+  "main": "./build/index.js",
+  "scripts": {
+    "start": "node ./build/index.js",
+    "dev": "nodemon ./src/index.ts",
+    "build": "tsc -p ."
+  },
+  "author": "tung",
+  "license": "ISC",
+  "devDependencies": {
+    "@types/bcryptjs": "^2.4.2",
+    "@types/crypto-js": "^4.1.1",
+    "@types/jsonwebtoken": "^8.5.8",
+    "@types/nodemailer": "^6.4.4",
+    "nodemon": "^2.0.16",
+    "ts-node": "^10.8.1"
+  },
+  "dependencies": {
+    "bcryptjs": "^2.4.3",
+    "crypto-js": "^4.1.1",
+    "dotenv": "^16.0.1",
+    "jsonwebtoken": "^8.5.1",
+    "kucoin-futures-node-api": "^1.0.8",
+    "mongoose": "^6.4.0",
+    "nodemailer": "^6.7.5"
+  }
+}
