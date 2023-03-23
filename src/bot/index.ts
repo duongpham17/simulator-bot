@@ -1,7 +1,7 @@
 import Bots, { IBotOrder, IBots } from '../model/bots';
 import Orders from '../model/orders';
 import Prices from '../model/prices';
-import Simulators from '../model/simulators';
+import Simulators, { ISimulators } from '../model/simulators';
 
 import { kucoin } from '../@api/kucoin';
 import { second_till_zero, is_object_empty } from '../@utils/functions'; 
@@ -19,7 +19,7 @@ const setup_trade = async ({ data }: { data: IBots }) => {
 
     const price = await KucoinLive.getPrice() as number;
 
-    await Prices.create({price, simulator: data.simulator, createdAt: new Date});
+    await Prices.create({price, bots: data._id, createdAt: new Date});
 
     return {
         price,
@@ -47,9 +47,9 @@ const close_trade = async ({ data, price }: { data: IBots, price: number}): Prom
         : Number( (order.open_price - price) * used_strategy.position_size)
 
     const closed_order = {
-        ...order, 
-        simulator: data.simulator,
+        ...order,
         user: data.user,
+        bots: data._id,
         close_price: price,
         closedAt: new Date,
         live: used_strategy.live,
@@ -108,7 +108,7 @@ const open_trade = async ({ data, price, side, clientOid }: { data: IBots, price
     return false;
 };
 
-const end_trade = async ({ data, price, isOrderOpen, KucoinLive }: { data: IBots, price: number, isOrderOpen: boolean, KucoinLive: any}): Promise<boolean> => {
+const end_trade = async ({ data, price, isOrderOpen, KucoinLive, message }: { data: IBots, price: number, isOrderOpen: boolean, KucoinLive: any, message: ISimulators["message"]}): Promise<boolean> => {
     const { used_strategy, order, stop, orders } = data;
 
     const is_end_trade = orders.length >= used_strategy.max_orders || stop;
@@ -118,8 +118,23 @@ const end_trade = async ({ data, price, isOrderOpen, KucoinLive }: { data: IBots
             if(used_strategy.live) await KucoinLive.closePosition(order.clientOid);
             await close_trade({ data, price });
         }
-        await Simulators.findByIdAndUpdate(data.simulator, {running: false, closedAt: new Date}, {new: true});
+
         await Bots.findByIdAndDelete(data._id);
+
+        await Simulators.create({
+            ...data,
+            bots: data._id,
+            user: data.user,
+            strategy: data.strategy,
+            message: message,
+            used_strategy: data.used_strategy,
+            live: data.used_strategy.live,
+            market_id: data.used_strategy.market_id,
+            synced: false,
+            orders: [],
+            createdAt: data.createdAt,
+            closedAt: new Date, 
+        });
 
         return true;
     }
@@ -160,13 +175,13 @@ const take_profit_hit = async ({ data, price, KucoinLive }: { data: IBots, price
     return false;
 };
 
-const live_trade_environment = async ({ data, price, side, KucoinLive }: { data: IBots, price: number, side: "buy" | "sell" , KucoinLive: any}): Promise<boolean> => {
+const live_trade_environment = async ({ data, price, side, KucoinLive, isOrderOpen }: { data: IBots, price: number, side: "buy" | "sell" , KucoinLive: any, isOrderOpen: boolean}): Promise<boolean> => {
     const { used_strategy } = data;
 
     const position = await KucoinLive.placePosition({ side, price, usdtBalance: used_strategy.usdt_balance, size: used_strategy.position_size, leverage: used_strategy.leverage });
     if(!position){
         await Bots.findByIdAndDelete(data._id);
-        await Simulators.findByIdAndUpdate(data.simulator, {message: "error", running: false}, {new: true});
+        await end_trade({data, price, isOrderOpen, KucoinLive, message: "error"})
         return true
     };
     if(position){
@@ -207,7 +222,7 @@ const robot = () => {
 
             const isOrderOpen = is_object_empty(order) ? false : true;
 
-            const end_script = await end_trade({ data: x, price, isOrderOpen, KucoinLive });
+            const end_script = await end_trade({ data: x, price, isOrderOpen, KucoinLive, message: "success" });
             if(end_script) continue;
 
             if(isOrderOpen){
@@ -227,7 +242,7 @@ const robot = () => {
             if(isNoSide) continue;
 
             if(used_strategy.live === true){
-                const live_order = await live_trade_environment({ data: x, price, side, KucoinLive });
+                const live_order = await live_trade_environment({ data: x, price, side, KucoinLive, isOrderOpen });
                 if(live_order) continue;
             };
             

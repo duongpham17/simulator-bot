@@ -28,4 +28,4 @@ const CollectionsSchema = new Schema<ICollections>({
     },
 });
 
-export default model<ICollections>('Collected', CollectionsSchema);
+export default model<ICollections>('Collections', CollectionsSchema);

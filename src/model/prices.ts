@@ -1,15 +1,15 @@
 import {Types, Schema, model, Document} from 'mongoose';
 
 export interface IPrices extends Document {
-    simulator: Types.ObjectId,
+    bots: Types.ObjectId,
     price: number,
     createdAt: Date,
 };
 
 const PricesSchema = new Schema<IPrices>({
-    simulator: {
+    bots: {
         type: Schema.Types.ObjectId,
-        ref: 'Simulators'
+        ref: 'Bots'
     },
     price: {
         type: Number,

@@ -15,7 +15,6 @@ export interface IBotOrder {
 
 export interface IBots extends Partial<Document> {
     user: PopulatedDoc<Types.ObjectId>,
-    simulator: PopulatedDoc<Types.ObjectId>,
     strategy: PopulatedDoc<Types.ObjectId>,
     used_strategy: IStrategies,
     order: IBotOrder,
@@ -31,10 +30,6 @@ const BotSchema = new Schema<IBots>({
     user: {
         type: Schema.Types.ObjectId, 
         ref: 'User' 
-    },
-    simulator: {
-        type: Schema.Types.ObjectId,
-        ref: "simulator"
     },
     strategy: {
         type: Schema.Types.ObjectId,

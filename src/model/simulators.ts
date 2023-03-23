@@ -4,13 +4,13 @@ import { IOrders } from './orders';
 
 export interface ISimulators extends Partial<Document> {
     user: Types.ObjectId,
+    bots: Types.ObjectId,
     strategy: Types.ObjectId,
     used_strategy: IStrategiesUsed,
     orders: IOrders[] | null, 
     prices_count: number,
     market_id: string,
     live: boolean,
-    running: boolean,
     synced: boolean,
     message: "error" | "success",
     createdAt: Date,
@@ -21,6 +21,10 @@ const SimulatorsSchema = new Schema<ISimulators>({
     user: {
         type: Schema.Types.ObjectId, 
         ref: 'User' 
+    },
+    bots: {
+        type: Schema.Types.ObjectId, 
+        ref: 'Bots' 
     },
     strategy: {
         type: Schema.Types.ObjectId,
@@ -48,10 +52,6 @@ const SimulatorsSchema = new Schema<ISimulators>({
     closedAt: {
         type: Date,
         default: new Date
-    },
-    running: {
-        type: Boolean,
-        default: true
     },
     message: {
         type: String,
