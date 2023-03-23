@@ -19,7 +19,7 @@ const setup_trade = async ({ data }: { data: IBots }) => {
 
     const price = await KucoinLive.getPrice() as number;
 
-    await Prices.create({price, simulator: data.simulator});
+    await Prices.create({price, simulator: data.simulator, createdAt: new Date});
 
     return {
         price,
