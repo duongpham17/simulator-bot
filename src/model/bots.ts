@@ -3,7 +3,7 @@ import { IStrategies } from './strategies';
 import { IOrders } from './orders';
 
 export interface IBotOrder {
-    clientOid: string
+    orderId: string
     market_id: string,
     side: "buy" | "sell",
     moving_price: number,
@@ -72,7 +72,7 @@ const BotSchema = new Schema<IBots>({
         passphrase: String,
     },
     order: {
-        clientOid: String,
+        orderId: String,
         moving_price: Number,
         open_price: Number,
         stop_loss: Number,

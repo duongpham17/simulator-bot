@@ -3,7 +3,6 @@ import {decrypt} from '../@utils/encryption';
 import crypto from 'crypto';
 
 interface Position {
-  usdtBalance: number,
   side: "buy" | "sell",
   price: number,
   leverage: number,
@@ -16,6 +15,22 @@ interface CustomKucoinProps {
   passphrase: string, 
   symbol: string
 };
+
+export const kucoin_symbol_price = async (crypto: string): Promise<{price: number, createdAt: Date} | null> => {
+
+  const apiLive = new kucoin_api();
+
+  apiLive.init({apiKey: "", secretKey: "", passphrase: "", environment: 'live'})
+
+  const response = await apiLive.getTicker(crypto.toUpperCase());
+
+  if(!response) return null
+
+  return {
+    price: response.data.price,
+    createdAt: new Date
+  }
+}
 
 export const kucoin = ({api_key, secret_key, passphrase, symbol}: CustomKucoinProps) => {
   
@@ -49,47 +64,46 @@ export const kucoin = ({api_key, secret_key, passphrase, symbol}: CustomKucoinPr
       }
     };
   
-    async placePosition(position: Position): Promise<any> {
-      const params = {  
-        clientOid: crypto.randomUUID(),
-        type: "market",
-        symbol: this.symbol.toUpperCase(),
-        leverage: position.leverage,
-        side: position.side,
-        price: position.price,
-        size: Math.trunc(position.size / 10)
-      };
+    async placePosition(position: Position): Promise<{orderId: string} | null> {
       try{
-        const r = await apiLive.placeOrder(params);
+        const r = await apiLive.placeOrder({
+          clientOid: crypto.randomUUID(),
+          type: "market",
+          symbol: this.symbol.toUpperCase(),
+          leverage: position.leverage.toString(),
+          side: position.side,
+          price: position.price,
+          size: Math.trunc(position.size / 10)
+        });
         return r.data
       } catch(err: any){
         return null;
       };
     };
     
-    async closePosition(clientOid: string): Promise<any>{
-      const params = {
-        clientOid,
-        closeOrder: true,
-        symbol: this.symbol.toUpperCase(),
-        type: "market"
-      }
+    async closePosition(id: string): Promise<any>{
       try{
-        const r = await apiLive.placeOrder(params);
+        const r = await apiLive.placeOrder({
+          clientOi: id,
+          closeOrder: true,
+          symbol: this.symbol.toUpperCase(),
+          type: "market"
+        });
         return r.data;
       } catch(_){
         return null;
       }
     };
-  
-    async getPosition(): Promise<any>{
+
+    async getPosition(oid: string): Promise<any>{
       try{
-        const r = await apiLive.getPosition({symbol: this.symbol});
-        return r.data;
+        const r = await apiLive.getOrderById({oid});
+        return r.data
       } catch(_){
-        return null;
-      };
-    };
+        return null
+      }
+    }
+
   }
 
   return new Kucoin(symbol)

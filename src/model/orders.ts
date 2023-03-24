@@ -4,7 +4,7 @@ import { IStrategiesUsed } from './strategies';
 export interface IOrders extends Partial<Document> {
     user: Types.ObjectId,
     bots: Types.ObjectId,
-    clientOid: string,
+    orderId: string,
     market_id: string,
     closed: "manual" | "bot",
     side: "buy" | "sell",
@@ -29,7 +29,7 @@ const OrdersSchema = new Schema<IOrders>({
         type: Schema.Types.ObjectId,
         ref: 'Bots'
     },
-    clientOid: {
+    orderId: {
         type: String
     },
     market_id: {
