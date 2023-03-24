@@ -34,7 +34,9 @@ const reset_trade = async ({ data, price }: { data: IBots, price: number}): Prom
 
     if(!isReset) return false;
 
-    await Bots.findByIdAndUpdate(data._id, {price_snapshot: price}, {new: true});
+    const bots = await Bots.findByIdAndUpdate(data._id, {price_snapshot: price}, {new: true});
+
+    if(!bots) return false;
     
     return true;
 };
@@ -61,13 +63,15 @@ const close_trade = async ({ data, price }: { data: IBots, price: number}): Prom
 
     if(!save_order) return false;
 
-    await Bots.findByIdAndUpdate(data._id, {
+    const bots = await Bots.findByIdAndUpdate(data._id, {
             price_snapshot: price, 
             order: {}, 
             $push: {orders: save_order} 
         }, 
         { new: true }
     );
+
+    if(!bots) return false;
 
     return true;
 };
@@ -103,9 +107,11 @@ const open_trade = async ({ data, price, side, clientOid }: { data: IBots, price
         createdAt: new Date(),
     }
 
-    await Bots.findByIdAndUpdate(data._id,{ order }, {new: true});
+    const bots = await Bots.findByIdAndUpdate(data._id,{ order }, {new: true});
 
-    return false;
+    if(!bots) return false
+
+    return true;
 };
 
 const end_trade = async ({ data, price, isOrderOpen, KucoinLive, message }: { data: IBots, price: number, isOrderOpen: boolean, KucoinLive: any, message: ISimulators["message"]}): Promise<boolean> => {
@@ -113,31 +119,31 @@ const end_trade = async ({ data, price, isOrderOpen, KucoinLive, message }: { da
 
     const is_end_trade = orders.length >= used_strategy.max_orders || stop;
 
-    if(is_end_trade){       
-        if(isOrderOpen) {
-            if(used_strategy.live) await KucoinLive.closePosition(order.clientOid);
-            await close_trade({ data, price });
-        }
+    if(!is_end_trade) return false;
 
-        await Bots.findByIdAndDelete(data._id);
-
-        await Simulators.create({
-            ...data,
-            bots: data._id,
-            user: data.user,
-            strategy: data.strategy,
-            message: message,
-            used_strategy: data.used_strategy,
-            live: data.used_strategy.live,
-            market_id: data.used_strategy.market_id,
-            synced: false,
-            orders: [],
-            createdAt: data.createdAt,
-            closedAt: new Date, 
-        });
-
-        return true;
+    if(isOrderOpen) {
+        if(used_strategy.live) await KucoinLive.closePosition(order.clientOid);
+        await close_trade({ data, price });
     }
+
+    const simulator = await Simulators.create({
+        ...data,
+        bots: data._id,
+        user: data.user,
+        strategy: data.strategy,
+        message: message,
+        used_strategy: data.used_strategy,
+        live: data.used_strategy.live,
+        market_id: data.used_strategy.market_id,
+        synced: false,
+        orders: [],
+        createdAt: data.createdAt,
+        closedAt: new Date, 
+    });
+
+    const deleted = await Bots.findByIdAndDelete(data._id, {new : true});
+
+    if(deleted && simulator) return true;
 
     return false;
 };
