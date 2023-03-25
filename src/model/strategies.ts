@@ -1,17 +1,20 @@
 import {Types, Schema, model, Document} from 'mongoose';
 
 export interface IStrategiesUsed {
+    live: boolean,
+    exchange: string,
+    market_id: string,
     strategy: string,
     short: number,
     long: number,
     stop_loss: number,
     trailing_take_profit: boolean,
-    take_profit: number,
     position_size: number,
-    max_orders: number,
+    usdt_balance: number,
     leverage: number,
+    take_profit: number,
+    max_orders: number,
     reset: number,
-    usdt_balance: number
 }
 
 export interface IStrategies extends Document {

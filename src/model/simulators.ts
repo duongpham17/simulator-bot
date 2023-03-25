@@ -61,17 +61,20 @@ const SimulatorsSchema = new Schema<ISimulators>({
 
     ],
     used_strategy: {
+        live: Boolean,
+        exchange: String,
+        market_id: String,
         strategy: String,
         short: Number,
         long: Number,
         stop_loss: Number,
         trailing_take_profit: Boolean,
-        take_profit: Number,
-        reset: Number,
-        usdt_balance: Number,
         position_size: Number,
+        usdt_balance: Number,
         leverage: Number,
-        max_orders: Number
+        take_profit: Number,
+        max_orders: Number,
+        reset: Number,
     },
 });
 

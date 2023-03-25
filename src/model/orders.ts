@@ -1,5 +1,5 @@
 import { Types, Schema, model, Document } from 'mongoose';
-import { IStrategiesUsed } from './strategies';
+import { IStrategies, IStrategiesUsed } from './strategies';
 
 export interface IOrders extends Partial<Document> {
     user: Types.ObjectId,
@@ -75,17 +75,20 @@ const OrdersSchema = new Schema<IOrders>({
         type: Boolean,
     },
     used_strategy: {
+        exchange: String,
+        market_id: String,
         strategy: String,
         short: Number,
         long: Number,
         stop_loss: Number,
-        trailing_take_profit: Boolean,
-        take_profit: Number,
-        reset: Number,
-        usdt_balance: Number,
         position_size: Number,
+        usdt_balance: Number,
         leverage: Number,
-        max_orders: Number
+        take_profit: Number,
+        max_orders: Number,
+        reset: Number,
+        trailing_take_profit: Boolean,
+        live: Boolean,
     },
 });
 

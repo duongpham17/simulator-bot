@@ -27,7 +27,7 @@ export const kucoin_symbol_price = async (crypto: string): Promise<{price: numbe
   if(!response) return null
 
   return {
-    price: response.data.price,
+    price: Number(response.data.price),
     createdAt: new Date
   }
 }
@@ -84,7 +84,7 @@ export const kucoin = ({api_key, secret_key, passphrase, symbol}: CustomKucoinPr
     async closePosition(id: string): Promise<any>{
       try{
         const r = await apiLive.placeOrder({
-          clientOi: id,
+          clientOid: id,
           closeOrder: true,
           symbol: this.symbol.toUpperCase(),
           type: "market"
