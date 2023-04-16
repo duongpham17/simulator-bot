@@ -215,8 +215,6 @@ const reset_timer_trade = async ({ data, price }: { data: IBots, price: number})
 
     const isReset = second_till_zero(used_strategy.reset) <= 2;
 
-    console.log(isReset);
-
     if(!isReset) return false;
 
     const bots = await Bots.findByIdAndUpdate(data._id, {price_snapshot: price}, {new: true});
