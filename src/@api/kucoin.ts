@@ -24,10 +24,14 @@ export const kucoin_symbol_price = async (crypto: string): Promise<{price: numbe
 
   const response = await apiLive.getTicker(crypto.toUpperCase());
 
-  if(!response) return null
+  if(!response) return null;
+
+  const isPriceFound = response.data.price === 0;
+  
+  if(isPriceFound) return null;
 
   return {
-    price: Number(response.data.price),
+    price: Number(response.data.price) || 0,
     createdAt: new Date
   }
 }

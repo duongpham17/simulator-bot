@@ -20,7 +20,7 @@ const robot = () => {
 
             const { used_strategy, order } = x;
             
-            const price = Number(crypto.price);
+            const price = Number(crypto.price)
 
             const isOrderOpen = is_object_empty(order) ? false : true;
 

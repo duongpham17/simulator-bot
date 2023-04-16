@@ -211,7 +211,11 @@ const exchange_place_position = async ({ data, side, price }: { data: IBots, sid
 const reset_timer_trade = async ({ data, price }: { data: IBots, price: number}): Promise<boolean> => {
     const { used_strategy } = data;
 
-    const isReset = used_strategy.reset > 0 ? second_till_zero(used_strategy.reset) <= 2 : false;
+    if(used_strategy.reset === 0) return false;
+
+    const isReset = second_till_zero(used_strategy.reset) <= 2;
+
+    console.log(isReset);
 
     if(!isReset) return false;
 
